@@ -2,9 +2,8 @@
 
 source_server="localhost"
 target_server=$1
-source_dir=$(cat service.txt)
 
-echo "Введи юзера или нажми enter"
+echo "Введи юзера или нажми enter [fitp]"
 read -r user
 if [ -z "$user" ]
 then
@@ -12,12 +11,14 @@ then
 fi
 echo "Введи пасс"
 read -r pass
-
-if ! ssh $user@$source_server "test -d \"$source_dir\""; then
-  echo "Source directory $source_dir does not exist on $source_server"
-  exit 1
+if [ -z "$pass" ]; then
+echo "пасс не может быть пустым"
 fi
 
-for dir in $source_dir; do
-  sshpass -p "$pass" scp "$dir"/*.jar $user@"$target_server":"$dir"
+for dir in $(cat ./service.txt); do
+  if ! ssh $user@$source_server "test -d \"$dir\""; then
+    echo "Source directory $dir does not exist on $source_server"
+    exit 1
+  fi
+  sshpass -p "$pass" scp /opt/fitp/app/"$dir"/*.jar "$user"@"$target_server":/opt/fitp/app/"$dir"
 done
